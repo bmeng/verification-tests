@@ -49,8 +49,14 @@ Given /^the env is using one of the listed network plugins:$/ do |table|
   plugin_list = table.raw.flatten
   _admin = admin
 
-  @result = _admin.cli_exec(:get, resource: "clusternetwork", resource_name: "default", template: '{{.pluginName}}')
+  @result = _admin.cli_exec(:get, resource: "networkconfigs.networkoperator.openshift.io", resource_name: "default", template: '{{.spec.defaultNetwork.openshiftSDNConfig.mode}}')
   if @result[:success] then
+    plugin_name = @result[:responce].downcase
+    unless plguin_list.include? plugin_name
+      raise "the env network plugin is #{plugin_name} but expecting #{plugin_list}."
+    end
+  elsif 
+    @result = _admin.cli_exec(:get, resource: "clusternetwork", resource_name: "default", template: '{{.pluginName}}') && @result[:success]
     plugin_name = @result[:response].split("-").last
     unless plugin_list.include? plugin_name
       raise "the env network plugin is #{plugin_name} but expecting #{plugin_list}."
